@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::env;
+use std::os::unix::process::ExitStatusExt;
 use regex::Regex;
 
 struct Token{
@@ -21,7 +22,27 @@ enum Tokens {
     Semicolon
 
 }
+pub struct Program{
+    pub function: function
+}
+pub struct function{
+    pub name: String,
+    pub body: statement
+}
+pub enum statement{
+    Return(expression),
+    ifStatement{
+        condition: expression,
+        ifBranch: Box<statement>,
+        elseBranch: Option<Box<statement>>
+    }
+}
 
+
+
+pub enum expression {
+    Constant(i32),
+}
 
 impl Tokens {
     pub fn get(&self) -> Token {
@@ -107,10 +128,9 @@ fn tokenizeInput<'a>(text: &'a str, tokens: &mut Vec<Tokens>) -> &'a str {
         let t = token.get();
         if let Some(mat) = t.pattern.find(text) {
             if mat.start() == 0 {
-                if mat.end() > best_match.0 {
+                if mat.end() >= best_match.0 {
                     
                     best_match = (mat.end(), Some(token));
-                    println!("{}", best_match.0);
                 }
             }
         
